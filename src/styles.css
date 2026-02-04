@@ -1,0 +1,8 @@
+body {
+  width: 500px;
+  margin: 20px auto;
+}
+.post-edit input,
+.post-edit textarea {
+  display: none;
+}
