@@ -2,6 +2,8 @@
 
 import axios from "axios";
 axios.defaults.baseURL = "https://jsonplaceholder.typicode.com";
+import iziToast from "izitoast";
+import "izitoast/dist/css/iziToast.min.css";
   
 // Kullanıcıları Getir
 document.querySelector("#load-users").addEventListener("click", async () => {
@@ -10,7 +12,10 @@ document.querySelector("#load-users").addEventListener("click", async () => {
         const markup = res.data.map(u => `<li>${u.name} - ${u.email} - ${u.company.name}</li>`).join("");
         document.querySelector("#user-list").innerHTML = markup;
     } catch (err) {
-        alert("Kullanıcılar alınamadı!");
+        iziToast.error({
+            message: 'Kullanıcılar alınamadı!',
+            position: 'topRight'
+        });
     }
 });
 
@@ -40,7 +45,10 @@ async function loadPosts() {
         document.querySelector("#post-list").insertAdjacentHTML("beforeend", markup);
         page++;
     } catch (err) {
-        alert("Gönderiler alınamadı!");
+        iziToast.error({
+            message: 'Gönderiler alınamadı!',
+            position: 'topRight'
+        });
     }
 };
 
@@ -73,9 +81,15 @@ document.querySelector("#post-list").addEventListener("click", async (e) => {
             await axios.delete(`/posts/${postId}`);
             form.closest("li").remove();
 
-            alert("Gönderi silindi!");
-        } catch(err) {
-            alert("Gönderi silinemedi!");
+            iziToast.success({
+                message: 'Gönderi silindi!',
+                position: 'topRight'
+            });
+        } catch (err) {
+            iziToast.error({
+                message: 'Gönderi silinemedi!',
+                position: 'topRight'
+            });
         }
     }
 });
@@ -89,7 +103,10 @@ document.querySelector("#post-list").addEventListener("submit", async (e) => {
         const newBody = form.elements.body.value;
         
         if (newTitle === "" || newBody === "") {
-            alert("Tüm alanlar doldurulmalı!");
+            iziToast.error({
+                message: 'Tüm alanlar doldurulmalı!',
+                position: 'topRight'
+            });
             return;
         }
         
@@ -110,10 +127,16 @@ document.querySelector("#post-list").addEventListener("submit", async (e) => {
 
         form.style.display = "none";
         form.previousElementSibling.style.display = "block";
-                
-        alert("Gönderi güncellendi!");
+            
+        iziToast.success({
+                message: 'Gönderi güncellendi!',
+                position: 'topRight'
+            });
         } catch (err) {
-        alert("Gönderi güncellenemedi!");
+            iziToast.error({
+                message: 'Gönderi güncellenemedi!',
+                position: 'topRight'
+            });
         }
     }
 });
@@ -147,11 +170,16 @@ document.querySelector("#post-form").addEventListener("submit", async (e) => {
             `;
         document.querySelector("#post-list").insertAdjacentHTML("beforeend", markup);
 
-        setTimeout(() => {
-            alert("Yeni gönderi eklendi!");
-        }, 250)
+        iziToast.success({
+            message: 'Yeni gönderi eklendi!',
+            position: 'topRight'
+        });
+        
         form.reset();
     } catch (err) {
-        alert("Gönderi eklenemedi!");
+        iziToast.error({
+            message: 'Gönderi eklenemedi!',
+            position: 'topRight'
+        });
     }
 });
