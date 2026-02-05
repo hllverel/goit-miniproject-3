@@ -29,26 +29,77 @@ async function loadPosts() {
                 </div>
                 <button class="show-edit-btn">Düzenle</button>
                 <form class="post-edit" style="display: none;">
-                    <input type="text" name="title" value="${p.title}" placeholder="Başlık" required />
-                    <textarea name="body" placeholder="İçerik" required>${p.body}</textarea>
+                    <input type="text" name="title" value="${p.title}" placeholder="Başlık" />
+                    <textarea name="body" placeholder="İçerik">${p.body}</textarea>
                     <button type="submit" class="save-btn">Kaydet</button>
                     <button type="button" class="cancel-btn">İptal</button>
                 </form>
             </li>
             `).join("");
         document.querySelector("#post-list").insertAdjacentHTML("beforeend", markup);
-
-        const editForm = document.querySelector(".post-edit")
-        editForm.style.display = "none";
-
         page++;
     } catch (err) {
         alert("Gönderiler alınamadı!");
     }
-}
+};
 
 document.querySelector("#load-posts").addEventListener("click", loadPosts);
 document.querySelector("#load-more").addEventListener("click", loadPosts);
+
+// Düzenleme Formunu Göster/Gizle
+document.querySelector("#post-list").addEventListener("click", (e) => {
+    if (e.target.classList.contains("show-edit-btn")) {
+        e.preventDefault();
+        const form = e.target.nextElementSibling;
+        form.style.display = "block";
+        e.target.style.display = "none";
+    }
+
+    if (e.target.classList.contains("cancel-btn")) {
+        e.preventDefault();
+        const form = e.target.closest("form");
+        form.style.display = "none";
+        form.previousElementSibling.style.display = "block";
+    }
+});
+
+// Gönderi Düzenle
+document.querySelector("#post-list").addEventListener("submit", async (e) => {
+    if (e.target.classList.contains("post-edit")) {
+        e.preventDefault();
+        const form = e.target;
+        const newTitle = form.elements.title.value;
+        const newBody = form.elements.body.value;
+        
+        if (newTitle === "" || newBody === "") {
+            alert("Tüm alanlar doldurulmalı!");
+            return;
+        }
+        
+        const postId = form.closest("li").dataset.postId;
+
+        try {
+        const res = await axios.patch(`/posts/${postId}`, {
+            title: newTitle,
+            body: newBody
+        }, {
+            headers: { "Content-Type": "application/json" }
+        });
+        
+        // Update the display
+        const postContent = form.closest("li").querySelector("div");
+        postContent.querySelector("b").textContent = res.data.title;
+        postContent.querySelector("p").textContent = res.data.body;
+
+        form.style.display = "none";
+        form.previousElementSibling.style.display = "block";
+                
+        alert("Gönderi güncellendi!");
+        } catch (err) {
+        alert("Gönderi güncellenemedi!");
+        }
+    }
+});
 
 // Yeni Gönderi
 document.querySelector("#post-form").addEventListener("submit", async (e) => {
@@ -85,47 +136,4 @@ document.querySelector("#post-form").addEventListener("submit", async (e) => {
     } catch (err) {
         alert("Gönderi eklenemedi!");
     }
-});
-
-// Gönderi Düzenle
-document.querySelector("#post-list").addEventListener("submit", async (e) => {
-    if (e.target.classList.contains("post-edit")) {
-        e.preventDefault();
-
-        const form = e.target;
-
-        const editForm = document.querySelector(".post-edit")
-        editForm.style.display = "block";
-
-        const newTitle = form.elements.title.value;
-        const newBody = form.elements.body.value;
-
-        if (newTitle === "" || newBody === "") {
-            alert("Tüm alanlar doldurulmalı!");
-            return;
-        }
-
-        const postId = form.closest("li").dataset.postId;
-
-        try {
-            const res = await axios.patch(`/posts/${postId}`, {
-                title: newTitle,
-                body: newBody
-            }, {
-            headers: { "Content-Type": "application/json" }
-            });
-                
-            // Update the display
-            const postContent = form.previousElementSibling;
-            postContent.querySelector("b").textContent = res.data.title;
-            postContent.querySelector("p").textContent = res.data.body;
-
-            editTitle.style.display = "none";
-            editBody.style.display = "none";
-                
-            alert("Gönderi güncellendi!");
-            } catch (err) {
-            alert("Gönderi güncellenemedi!");
-            }
-}
 });
